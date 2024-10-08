@@ -4,6 +4,7 @@ import (
 	"github.com/bespinian/ict-todo/backend/tasks/internal"
 	"github.com/bespinian/ict-todo/backend/tasks/internal/models"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 )
 
 type TaskHandler struct {
@@ -30,7 +31,18 @@ func (h *TaskHandler) Get(c *fiber.Ctx) error {
 }
 
 func (h *TaskHandler) Create(c *fiber.Ctx) error {
-	return c.JSON(models.Task{})
+	task := new(models.Task)
+	if err := c.BodyParser(task); err != nil {
+		log.Error(err)
+		return err
+	}
+
+	newTask, err := h.store.Add(task)
+	if err != nil {
+		return fiber.ErrInternalServerError
+	}
+
+	return c.JSON(newTask)
 }
 
 func (h *TaskHandler) Update(c *fiber.Ctx) error {

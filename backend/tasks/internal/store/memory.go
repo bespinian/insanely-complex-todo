@@ -1,6 +1,7 @@
 package store
 
 import (
+	"errors"
 	"maps"
 	"slices"
 
@@ -26,8 +27,15 @@ func (m *MemoryStore) Get(id string) *models.Task {
 }
 
 func (m *MemoryStore) Add(task *models.Task) (*models.Task, error) {
-	id := uuid.New()
-	task.Id = id.String()
+	if task.Id == "" {
+		id := uuid.New()
+		task.Id = id.String()
+	}
+	_, exists := m.tasks[task.Id]
+	if exists {
+		return nil, errors.New("The task ID already exists!")
+	}
+
 	m.tasks[task.Id] = task
 
 	return task, nil

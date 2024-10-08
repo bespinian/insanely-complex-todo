@@ -3,10 +3,14 @@ package store_test
 import (
 	"testing"
 
+	"github.com/bespinian/ict-todo/backend/tasks/internal"
 	"github.com/bespinian/ict-todo/backend/tasks/internal/models"
 	"github.com/bespinian/ict-todo/backend/tasks/internal/store"
 	"github.com/stretchr/testify/assert"
 )
+
+// make sure MemoryStore implements internal.TaskStore
+var _ internal.TaskStore = &store.MemoryStore{}
 
 func getStoreWithATask() (*store.MemoryStore, string) {
 	store := store.NewMemoryStore()
