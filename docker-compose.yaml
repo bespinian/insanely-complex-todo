@@ -1,0 +1,11 @@
+services:
+  frontend:
+    build:
+      context: frontend
+    ports:
+      - 8080:80
+  tasks:
+    build:
+      context: backend/tasks
+    ports:
+      - 3000:3000
