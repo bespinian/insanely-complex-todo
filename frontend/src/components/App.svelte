@@ -1,5 +1,5 @@
 <script lang="ts">
-	import store from '$lib/taskStore';
+	import store from '$lib/task_store';
 	import { onMount, type ComponentEvents } from 'svelte';
 	import TodoItem from './TodoItem.svelte';
 	import type Task from '$lib/task';
