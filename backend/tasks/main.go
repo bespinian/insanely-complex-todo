@@ -7,6 +7,7 @@ import (
 	"github.com/bespinian/ict-todo/backend/tasks/internal/models"
 	"github.com/bespinian/ict-todo/backend/tasks/internal/store"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
@@ -17,6 +18,9 @@ func main() {
 	app.Use(logger.New())
 	app.Use(requestid.New())
 	app.Use(healthcheck.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+	}))
 
 	api := app.Group("/api")
 
