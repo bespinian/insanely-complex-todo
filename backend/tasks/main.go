@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{ErrorHandler: handlers.ErrorHandler})
 	app.Use(logger.New())
 	app.Use(requestid.New())
 	app.Use(healthcheck.New())

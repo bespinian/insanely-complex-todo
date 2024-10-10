@@ -2,11 +2,12 @@
 	import store from '$lib/taskStore';
 	import { onMount, type ComponentEvents } from 'svelte';
 	import TodoItem from './TodoItem.svelte';
-	import Task from '$lib/task';
+	import type Task from '$lib/task';
 
 	let newItem = '';
 	let fetchingTasks: Promise<void>;
 	let tasks = store.tasks;
+	let error = store.error;
 
 	onMount(() => (fetchingTasks = store.fetch()));
 
@@ -31,6 +32,10 @@
 
 <div class="bg-white max-w-lg mx-auto shadow-lg rounded-lg mt-16">
 	<h1 class="font-bold px-4 py-2">To-Do List</h1>
+
+	{#if $error}
+		<p class="px-4 py-2 text-red-700 bg-red-50">{$error}</p>
+	{/if}
 
 	<form class="w-full mx-auto px-4 py-2">
 		<div class="flex items-center border-b-2 border-blue-500 py-2">

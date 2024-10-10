@@ -1,18 +1,39 @@
-import Task from "./task";
+import type Task from "./task";
 import { writable } from "svelte/store";
 
 const URL = "http://localhost:8001/api/tasks"
 
 const tasks = writable<Task[]>([])
+const error = writable<string | undefined>(undefined)
+
+function getJsonRequest(url: string, method?: string, body?: object): Request {
+    return new Request(url, {
+        method: method,
+        body: body ? JSON.stringify(body) : null,
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+}
 
 function createStore() {
     return {
         tasks,
+        error,
 
         async fetch(): Promise<void> {
-            return fetch(URL)
-                .then((response: Response) => response.json())
-                .then((json: object[]) => tasks.set(json.map((data) => new Task(data))))
+            return fetch(getJsonRequest(URL))
+                .then((response: Response) => {
+                    if (response.ok) {
+                        return response.json()
+                    }
+                    throw "Could not load data"
+                })
+                .then((data) => {
+                    tasks.set(data)
+                    error.set(undefined)
+                })
+                .catch((err) => error.set(err))
         },
 
         async removeById(taskId: string) {
@@ -20,8 +41,19 @@ function createStore() {
         },
 
         async insert(name: string) {
-            const task = new Task({ id: crypto.randomUUID(), name: name })
-            tasks.update((tasks: Task[]) => [...tasks, task])
+            const task: Task = { id: crypto.randomUUID(), name: name, complete: false }
+            fetch(getJsonRequest(URL, "POST", task))
+                .then((response: Response) => {
+                    if (response.ok) {
+                        return response.json()
+                    }
+                    throw "Task could not be saved"
+                })
+                .then((data) => {
+                    tasks.update((tasks: Task[]) => [...tasks, data])
+                    error.set(undefined)
+                })
+                .catch((err) => error.set(err))
         },
 
         async toggle(id: string, isComplete: boolean) {
