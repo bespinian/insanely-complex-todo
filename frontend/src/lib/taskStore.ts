@@ -1,43 +1,31 @@
 import Task from "./task";
 import { writable } from "svelte/store";
 
-const demoTasks = [
-    new Task({
-        id: crypto.randomUUID(),
-        name: 'Complete project review',
-        complete: false
-    }),
-    new Task({
-        id: crypto.randomUUID(),
-        name: 'Do another task',
-        complete: true
-    })
-]
+const URL = "http://localhost:8001/api/tasks"
 
+const tasks = writable<Task[]>([])
 
 function createStore() {
-    const initialTasks: Task[] = []
-    const { subscribe, update, set } = writable(initialTasks)
-
     return {
-        subscribe,
-        update,
+        tasks,
 
-        async init() {
-            set(demoTasks)
+        async fetch(): Promise<void> {
+            return fetch(URL)
+                .then((response: Response) => response.json())
+                .then((json: object[]) => tasks.set(json.map((data) => new Task(data))))
         },
 
         async removeById(taskId: string) {
-            update((tasks: Task[]) => tasks.filter((item) => item.id !== taskId))
+            tasks.update((tasks: Task[]) => tasks.filter((item) => item.id !== taskId))
         },
 
-        async add(name: string) {
+        async insert(name: string) {
             const task = new Task({ id: crypto.randomUUID(), name: name })
-            update((tasks: Task[]) => [...tasks, task])
+            tasks.update((tasks: Task[]) => [...tasks, task])
         },
 
         async toggle(id: string, isComplete: boolean) {
-            update((tasks: Task[]) => {
+            tasks.update((tasks: Task[]) => {
                 const taskIndex = tasks.findIndex((task: Task) => task.id == id)
                 if (taskIndex >= 0) {
                     tasks[taskIndex].complete = isComplete

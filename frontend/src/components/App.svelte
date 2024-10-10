@@ -1,30 +1,31 @@
 <script lang="ts">
-	import type { ComponentEvents } from 'svelte';
+	import store from '$lib/taskStore';
+	import { onMount, type ComponentEvents } from 'svelte';
 	import TodoItem from './TodoItem.svelte';
 	import Task from '$lib/task';
-	import taskStore from '$lib/taskStore';
-
-	export let tasks: Task[] = [];
-	export let numberOfOpenTasks = 0;
-
-	taskStore.subscribe((tasksFromStore) => {
-		tasks = tasksFromStore;
-		numberOfOpenTasks = tasks.filter((task: Task) => !task.complete).length;
-	});
 
 	let newItem = '';
+	let fetchingTasks: Promise<void>;
+	let tasks = store.tasks;
 
-	function addTask() {
-		taskStore.add(newItem);
+	onMount(() => (fetchingTasks = store.fetch()));
+
+	export let numberOfOpenTasks = 0;
+	store.tasks.subscribe((tasksFromStore: Task[]) => {
+		numberOfOpenTasks = tasksFromStore.filter((task: Task) => !task.complete).length;
+	});
+
+	function handleAdd() {
+		store.insert(newItem);
 		newItem = '';
 	}
 
 	function handleRemove(event: ComponentEvents<TodoItem>['remove']) {
-		taskStore.removeById(event.detail);
+		store.removeById(event.detail);
 	}
 
 	function handleToggle(event: ComponentEvents<TodoItem>['toggle']) {
-		taskStore.toggle(event.detail.id, event.detail.complete);
+		store.toggle(event.detail.id, event.detail.complete);
 	}
 </script>
 
@@ -42,14 +43,14 @@
 			<button
 				class="flex-shrink-0 bg-blue-500 hover:bg-blue-700 border-blue-500 hover:border-blue-700 text-sm border-4 text-white py-1 px-2 rounded"
 				type="button"
-				on:click={addTask}
+				on:click={handleAdd}
 			>
 				Add
 			</button>
 		</div>
 	</form>
 
-	{#await taskStore.init()}
+	{#await fetchingTasks}
 		<ul class="divide-y divide-gray-200 px-4">
 			<li class="py-4 animate-pulse">
 				<div class="h-4 bg-gray-300 rounded mb-2"></div>
@@ -72,7 +73,7 @@
 			<li class="only-child:block hidden py-4">
 				<div class="flex items-center">You have no tasks yet. Create one now.</div>
 			</li>
-			{#each tasks as { id, name, complete }}
+			{#each $tasks as { id, name, complete }}
 				<TodoItem
 					{id}
 					task={name}
