@@ -1,7 +1,7 @@
 import type Task from "./task";
 import { writable } from "svelte/store";
 
-const URL = "http://localhost:8001/api/tasks"
+const URL = "/api/tasks"
 
 const tasks = writable<Task[]>([])
 const error = writable<string | undefined>(undefined)

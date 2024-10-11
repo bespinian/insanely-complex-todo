@@ -1,11 +1,44 @@
 services:
+  traefik:
+    image: "traefik:v3.1"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+    ports:
+      - "8000:80" # Our entrypoint
+      - "8080:8080" # Dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - default
+      - internal
+
   frontend:
     build:
       context: frontend
-    ports:
-      - 8000:80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+    networks:
+      - internal
+
   tasks:
     build:
       context: backend/tasks
-    ports:
-      - 8001:3000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tasks.rule=PathPrefix(`/api/tasks`)"
+      - "traefik.http.routers.tasks.entrypoints=web"
+      - "traefik.http.services.tasks.loadbalancer.server.port=3000"
+    networks:
+      - internal
+
+networks:
+  default: {}
+  internal:
+    external: false
