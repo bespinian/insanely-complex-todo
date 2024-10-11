@@ -37,52 +37,43 @@ function createStore() {
         },
 
         async removeById(taskId: string) {
-            fetch(getJsonRequest(URL + `/${taskId}`, "DELETE"))
-                .then((response: Response) => {
-                    if (!response.ok) {
-                        throw "Task could not be deleted."
-                    }
-                    tasks.update((tasks: Task[]) => tasks.filter((item) => item.id !== taskId))
-                    error.set(undefined)
-                })
-                .catch((err) => error.set(err))
+            try {
+                await fetch(getJsonRequest(URL + `/${taskId}`, "DELETE"))
+                tasks.update((tasks: Task[]) => tasks.filter((item) => item.id !== taskId))
+                error.set(undefined)
+            } catch {
+                error.set("Could not delete task.")
+            }
         },
 
         async insert(name: string) {
             const task: Task = { id: crypto.randomUUID(), name: name, complete: false }
-            fetch(getJsonRequest(URL, "POST", task))
-                .then((response: Response) => {
-                    if (response.ok) {
-                        return response.json()
-                    }
-                    throw "Task could not be saved"
-                })
-                .then((data) => {
-                    tasks.update((tasks: Task[]) => [...tasks, data])
-                    error.set(undefined)
-                })
-                .catch((err) => error.set(err))
+            try {
+                const jsonResponse = await fetch(getJsonRequest(URL, "POST", task))
+                const data = await jsonResponse.json()
+                tasks.update((tasks: Task[]) => [...tasks, data])
+                error.set(undefined)
+            } catch {
+                error.set("Could not add task.")
+            }
         },
 
         async update(task: Task) {
-            fetch(getJsonRequest(URL + `/${task.id}`, "PUT", task))
-                .then((response: Response) => {
-                    if (response.ok) {
-                        return response.json()
+            try {
+                const jsonResponse = await fetch(getJsonRequest(URL + `/${task.id}`, "PUT", task))
+                const data: Task = await jsonResponse.json()
+
+                tasks.update((tasks: Task[]) => {
+                    const taskIndex = tasks.findIndex((task: Task) => task.id == data.id)
+                    if (taskIndex >= 0) {
+                        tasks[taskIndex] = data
                     }
-                    throw "Task could not be saved."
+                    return tasks
                 })
-                .then((data: Task) => {
-                    tasks.update((tasks: Task[]) => {
-                        const taskIndex = tasks.findIndex((task: Task) => task.id == data.id)
-                        if (taskIndex >= 0) {
-                            tasks[taskIndex] = data
-                        }
-                        return tasks
-                    })
-                    error.set(undefined)
-                })
-                .catch((err) => error.set(err))
+                error.set(undefined)
+            } catch {
+                error.set("Could not update task.")
+            }
         }
     }
 }
