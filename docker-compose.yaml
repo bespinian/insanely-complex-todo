@@ -19,17 +19,26 @@ services:
   frontend:
     build:
       context: frontend
+      target: build
+    command: [ "npm", "run",  "dev", "--", "--host" ]
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
       - "traefik.http.routers.frontend.entrypoints=web"
-      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+      - "traefik.http.services.frontend.loadbalancer.server.port=5173"
     networks:
       - internal
 
   tasks:
     build:
       context: backend/tasks
+      target: build
+    command: ["gow", "-c", "-e=go,mod,sum,env,toml", "run", "."]
+    volumes:
+      - ./backend/tasks:/app
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.tasks.rule=PathPrefix(`/api/tasks`)"
