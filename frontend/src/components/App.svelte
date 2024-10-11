@@ -26,7 +26,7 @@
 	}
 
 	function handleToggle(event: ComponentEvents<TodoItem>['toggle']) {
-		store.toggle(event.detail.id, event.detail.complete);
+		store.update(event.detail as Task);
 	}
 </script>
 
@@ -78,14 +78,8 @@
 			<li class="only-child:block hidden py-4">
 				<div class="flex items-center">You have no tasks yet. Create one now.</div>
 			</li>
-			{#each $tasks as { id, name, complete }}
-				<TodoItem
-					{id}
-					task={name}
-					completed={complete}
-					on:toggle={handleToggle}
-					on:remove={handleRemove}
-				></TodoItem>
+			{#each $tasks as task}
+				<TodoItem {task} on:toggle={handleToggle} on:remove={handleRemove}></TodoItem>
 			{/each}
 		</ul>
 	{/await}

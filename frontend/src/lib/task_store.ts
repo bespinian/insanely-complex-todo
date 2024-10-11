@@ -37,7 +37,15 @@ function createStore() {
         },
 
         async removeById(taskId: string) {
-            tasks.update((tasks: Task[]) => tasks.filter((item) => item.id !== taskId))
+            fetch(getJsonRequest(URL + `/${taskId}`, "DELETE"))
+                .then((response: Response) => {
+                    if (!response.ok) {
+                        throw "Task could not be deleted."
+                    }
+                    tasks.update((tasks: Task[]) => tasks.filter((item) => item.id !== taskId))
+                    error.set(undefined)
+                })
+                .catch((err) => error.set(err))
         },
 
         async insert(name: string) {
@@ -56,14 +64,25 @@ function createStore() {
                 .catch((err) => error.set(err))
         },
 
-        async toggle(id: string, isComplete: boolean) {
-            tasks.update((tasks: Task[]) => {
-                const taskIndex = tasks.findIndex((task: Task) => task.id == id)
-                if (taskIndex >= 0) {
-                    tasks[taskIndex].complete = isComplete
-                }
-                return tasks
-            })
+        async update(task: Task) {
+            fetch(getJsonRequest(URL + `/${task.id}`, "PUT", task))
+                .then((response: Response) => {
+                    if (response.ok) {
+                        return response.json()
+                    }
+                    throw "Task could not be saved."
+                })
+                .then((data: Task) => {
+                    tasks.update((tasks: Task[]) => {
+                        const taskIndex = tasks.findIndex((task: Task) => task.id == data.id)
+                        if (taskIndex >= 0) {
+                            tasks[taskIndex] = data
+                        }
+                        return tasks
+                    })
+                    error.set(undefined)
+                })
+                .catch((err) => error.set(err))
         }
     }
 }
