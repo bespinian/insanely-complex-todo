@@ -31,6 +31,14 @@ func TestMemoryList(t *testing.T) {
 	assert.Equal(t, listOfTasks[0].Id, id)
 }
 
+func TestMemoryListEmpty(t *testing.T) {
+	store := store.MemoryStore{}
+
+	listOfTasks := store.List()
+	assert.NotNil(t, listOfTasks)
+	assert.Len(t, listOfTasks, 0)
+}
+
 func TestMemoryGet(t *testing.T) {
 	store, id := getStoreWithATask()
 

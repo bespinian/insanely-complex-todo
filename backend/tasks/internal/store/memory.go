@@ -2,8 +2,6 @@ package store
 
 import (
 	"errors"
-	"maps"
-	"slices"
 
 	"github.com/bespinian/ict-todo/backend/tasks/internal/models"
 	"github.com/google/uuid"
@@ -18,8 +16,11 @@ func NewMemoryStore() *MemoryStore {
 }
 
 func (m *MemoryStore) List() []*models.Task {
-	vals := slices.Collect(maps.Values(m.tasks))
-	return vals
+	values := make([]*models.Task, 0, len(m.tasks))
+	for _, value := range m.tasks {
+		values = append(values, value)
+	}
+	return values
 }
 
 func (m *MemoryStore) Get(id string) *models.Task {
