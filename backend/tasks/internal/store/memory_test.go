@@ -1,6 +1,7 @@
 package store_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/bespinian/ict-todo/backend/tasks/internal"
@@ -16,7 +17,7 @@ func getStoreWithATask() (*store.MemoryStore, string) {
 	store := store.NewMemoryStore()
 	task := &models.Task{Name: "Testtask"}
 
-	_, err := store.Add(task)
+	_, err := store.Add(context.Background(), task)
 	if err != nil {
 		return nil, ""
 	}
@@ -26,7 +27,7 @@ func getStoreWithATask() (*store.MemoryStore, string) {
 func TestMemoryList(t *testing.T) {
 	store, id := getStoreWithATask()
 
-	listOfTasks := store.List()
+	listOfTasks := store.List(context.Background())
 	assert.Len(t, listOfTasks, 1)
 	assert.Equal(t, listOfTasks[0].Id, id)
 }
@@ -34,7 +35,7 @@ func TestMemoryList(t *testing.T) {
 func TestMemoryListEmpty(t *testing.T) {
 	store := store.MemoryStore{}
 
-	listOfTasks := store.List()
+	listOfTasks := store.List(context.Background())
 	assert.NotNil(t, listOfTasks)
 	assert.Len(t, listOfTasks, 0)
 }
@@ -42,7 +43,7 @@ func TestMemoryListEmpty(t *testing.T) {
 func TestMemoryGet(t *testing.T) {
 	store, id := getStoreWithATask()
 
-	task := store.Get(id)
+	task := store.Get(context.Background(), id)
 	assert.Equal(t, task.Id, id)
 }
 
@@ -50,7 +51,7 @@ func TestMemoryAdd(t *testing.T) {
 	store := store.NewMemoryStore()
 	task := &models.Task{Name: "Testtask"}
 
-	task, err := store.Add(task)
+	task, err := store.Add(context.Background(), task)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, task)
@@ -59,10 +60,10 @@ func TestMemoryAdd(t *testing.T) {
 
 func TestMemoryUpdate(t *testing.T) {
 	store, id := getStoreWithATask()
-	task := store.Get(id)
+	task := store.Get(context.Background(), id)
 
 	task.Name = "new name"
-	err := store.Update(task)
+	err := store.Update(context.Background(), task)
 
 	assert.Nil(t, err)
 }
@@ -70,9 +71,9 @@ func TestMemoryUpdate(t *testing.T) {
 func TestMemoryDelete(t *testing.T) {
 	store, id := getStoreWithATask()
 
-	err := store.Delete(id)
+	err := store.Delete(context.Background(), id)
 	assert.Nil(t, err)
 
-	tasks := store.List()
+	tasks := store.List(context.Background())
 	assert.Len(t, tasks, 0)
 }

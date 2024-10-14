@@ -2,7 +2,9 @@ package main
 
 import (
 	"log"
+	"os"
 
+	"github.com/bespinian/ict-todo/backend/tasks/internal"
 	"github.com/bespinian/ict-todo/backend/tasks/internal/handlers"
 	"github.com/bespinian/ict-todo/backend/tasks/internal/store"
 	"github.com/gofiber/fiber/v2"
@@ -19,9 +21,21 @@ func main() {
 
 	api := app.Group("/api")
 
-	store := store.NewMemoryStore()
+	var taskStore internal.TaskStore
+	if mongoUri := os.Getenv("MONGODB_URI"); mongoUri != "" {
+		log.Print("MONGODB_URI is set. Using MongoDB as storage.")
+		db, err := store.NewMongoDatabase(mongoUri, "ict")
+		if err != nil {
+			log.Printf("Could not connect to MongoDB: %s. Falling back to in-memory store.", err)
+			taskStore = store.NewMemoryStore()
+		} else {
+			taskStore = store.NewMongoStore(db)
+		}
+	} else {
+		taskStore = store.NewMemoryStore()
+	}
 
-	taskHandler := handlers.NewTaskHandler(store)
+	taskHandler := handlers.NewTaskHandler(taskStore)
 
 	api.Get("/tasks", taskHandler.List)
 	api.Get("/tasks/:id", taskHandler.Get)

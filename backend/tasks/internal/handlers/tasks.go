@@ -16,14 +16,14 @@ func NewTaskHandler(store internal.TaskStore) *TaskHandler {
 }
 
 func (h *TaskHandler) List(c *fiber.Ctx) error {
-	tasks := h.store.List()
+	tasks := h.store.List(c.Context())
 	return c.JSON(tasks)
 }
 
 func (h *TaskHandler) Get(c *fiber.Ctx) error {
 	taskId := c.Params("id")
 
-	task := h.store.Get(taskId)
+	task := h.store.Get(c.Context(), taskId)
 	if task == nil {
 		return fiber.ErrNotFound
 	}
@@ -36,8 +36,9 @@ func (h *TaskHandler) Create(c *fiber.Ctx) error {
 		return err
 	}
 
-	newTask, err := h.store.Add(task)
+	newTask, err := h.store.Add(c.Context(), task)
 	if err != nil {
+		log.Error(err)
 		return fiber.ErrInternalServerError
 	}
 
@@ -50,7 +51,7 @@ func (h *TaskHandler) Update(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := h.store.Update(task); err != nil {
+	if err := h.store.Update(c.Context(), task); err != nil {
 		log.Error(err)
 		return fiber.ErrInternalServerError
 	}
@@ -59,7 +60,7 @@ func (h *TaskHandler) Update(c *fiber.Ctx) error {
 }
 
 func (h *TaskHandler) Delete(c *fiber.Ctx) error {
-	if err := h.store.Delete(c.Params("id")); err != nil {
+	if err := h.store.Delete(c.Context(), c.Params("id")); err != nil {
 		return err
 	}
 	return c.SendStatus(204)

@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"errors"
 
 	"github.com/bespinian/ict-todo/backend/tasks/internal/models"
@@ -15,7 +16,7 @@ func NewMemoryStore() *MemoryStore {
 	return &MemoryStore{map[string]*models.Task{}}
 }
 
-func (m *MemoryStore) List() []*models.Task {
+func (m *MemoryStore) List(ctx context.Context) []*models.Task {
 	values := make([]*models.Task, 0, len(m.tasks))
 	for _, value := range m.tasks {
 		values = append(values, value)
@@ -23,11 +24,11 @@ func (m *MemoryStore) List() []*models.Task {
 	return values
 }
 
-func (m *MemoryStore) Get(id string) *models.Task {
+func (m *MemoryStore) Get(ctx context.Context, id string) *models.Task {
 	return m.tasks[id]
 }
 
-func (m *MemoryStore) Add(task *models.Task) (*models.Task, error) {
+func (m *MemoryStore) Add(ctx context.Context, task *models.Task) (*models.Task, error) {
 	if task.Id == "" {
 		id := uuid.New()
 		task.Id = id.String()
@@ -42,13 +43,13 @@ func (m *MemoryStore) Add(task *models.Task) (*models.Task, error) {
 	return task, nil
 }
 
-func (m *MemoryStore) Update(task *models.Task) error {
+func (m *MemoryStore) Update(ctx context.Context, task *models.Task) error {
 	m.tasks[task.Id] = task
 
 	return nil
 }
 
-func (m *MemoryStore) Delete(id string) error {
+func (m *MemoryStore) Delete(ctx context.Context, id string) error {
 	delete(m.tasks, id)
 	return nil
 }

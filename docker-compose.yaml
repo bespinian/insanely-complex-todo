@@ -39,11 +39,19 @@ services:
     command: ["gow", "-c", "-e=go,mod,sum,env,toml", "run", "."]
     volumes:
       - ./backend/tasks:/app
+    environment:
+      - MONGODB_URI=mongodb://mongo
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.tasks.rule=PathPrefix(`/api/tasks`)"
       - "traefik.http.routers.tasks.entrypoints=web"
       - "traefik.http.services.tasks.loadbalancer.server.port=3000"
+    networks:
+      - internal
+
+  mongo:
+    image: mongo:8.0
+    restart: always
     networks:
       - internal
 
