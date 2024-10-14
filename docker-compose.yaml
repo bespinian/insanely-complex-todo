@@ -64,6 +64,11 @@ services:
     restart: always
     networks:
       - internal
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data: {}
 
 networks:
   default: {}
