@@ -17,11 +17,11 @@ func getStoreWithATask() (*store.MemoryStore, string) {
 	store := store.NewMemoryStore()
 	task := models.Task{Name: "Testtask"}
 
-	_, err := store.Add(context.Background(), task)
+	newTask, err := store.Add(context.Background(), task)
 	if err != nil {
-		return nil, ""
+		panic(err)
 	}
-	return store, task.Id
+	return store, newTask.Id
 }
 
 func TestMemoryList(t *testing.T) {

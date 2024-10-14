@@ -33,7 +33,7 @@ func (m *MemoryStore) Get(ctx context.Context, id string) (models.Task, error) {
 }
 
 func (m *MemoryStore) Add(ctx context.Context, task models.Task) (models.Task, error) {
-	if task.Id == "" {
+	if task.GetId() == "" {
 		id := uuid.New()
 		task.Id = id.String()
 	}

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/bespinian/ict-todo/backend/tasks/internal"
+	"github.com/bespinian/ict-todo/backend/tasks/internal/events"
 	"github.com/bespinian/ict-todo/backend/tasks/internal/handlers"
 	"github.com/bespinian/ict-todo/backend/tasks/internal/store"
 	"github.com/gofiber/fiber/v2"
@@ -19,22 +20,38 @@ func main() {
 	app.Use(requestid.New())
 	app.Use(healthcheck.New())
 
-	api := app.Group("/api")
+	taskStore := configureTaskStore()
+	configureEventQueues()
+	configureAPIHandler(app, taskStore)
 
-	var taskStore internal.TaskStore
+	app.Use(func(c *fiber.Ctx) error {
+		return c.SendStatus(404)
+	})
+
+	log.Fatal(app.Listen(":3000"))
+}
+
+func configureTaskStore() internal.TaskStore {
 	if mongoUri := os.Getenv("MONGODB_URI"); mongoUri != "" {
 		log.Print("MONGODB_URI is set. Using MongoDB as storage.")
 		db, err := store.NewMongoDatabase(mongoUri, "ict")
 		if err != nil {
 			log.Printf("Could not connect to MongoDB: %s. Falling back to in-memory store.", err)
-			taskStore = store.NewMemoryStore()
+			return store.NewMemoryStore()
 		} else {
-			taskStore = store.NewMongoStore(db)
+			return store.NewMongoStore(db)
 		}
 	} else {
-		taskStore = store.NewMemoryStore()
+		return store.NewMemoryStore()
 	}
+}
 
+func configureEventQueues() {
+	events.AddQueue(&events.CLIQueue{})
+}
+
+func configureAPIHandler(app *fiber.App, taskStore internal.TaskStore) fiber.Router {
+	api := app.Group("/api")
 	taskHandler := handlers.NewTaskHandler(taskStore)
 
 	api.Get("/tasks", taskHandler.List)
@@ -43,9 +60,5 @@ func main() {
 	api.Put("/tasks/:id", taskHandler.Update)
 	api.Delete("/tasks/:id", taskHandler.Delete)
 
-	app.Use(func(c *fiber.Ctx) error {
-		return c.SendStatus(404)
-	})
-
-	log.Fatal(app.Listen(":3000"))
+	return api
 }

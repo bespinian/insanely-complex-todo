@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/bespinian/ict-todo/backend/tasks/internal"
+	"github.com/bespinian/ict-todo/backend/tasks/internal/events"
 	"github.com/bespinian/ict-todo/backend/tasks/internal/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -46,6 +47,8 @@ func (h *TaskHandler) Create(c *fiber.Ctx) error {
 		return fiber.ErrInternalServerError
 	}
 
+	go events.NotifyTaskCreated(c.Context(), task)
+
 	return c.Status(fiber.StatusCreated).JSON(newTask)
 }
 
@@ -61,12 +64,22 @@ func (h *TaskHandler) Update(c *fiber.Ctx) error {
 		return fiber.ErrInternalServerError
 	}
 
+	go events.NotifyTaskUpdated(c.Context(), task)
+
 	return c.JSON(updatedTask)
 }
 
 func (h *TaskHandler) Delete(c *fiber.Ctx) error {
+	task, err := h.store.Get(c.Context(), c.Params("id"))
+	if err != nil {
+		return err
+	}
+
 	if err := h.store.Delete(c.Context(), c.Params("id")); err != nil {
 		return err
 	}
+
+	go events.NotifyTaskDeleted(c.Context(), task)
+
 	return c.SendStatus(204)
 }
