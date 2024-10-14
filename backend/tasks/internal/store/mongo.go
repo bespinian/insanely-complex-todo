@@ -34,18 +34,19 @@ func NewMongoStore(database *mongo.Database) *MongoStore {
 	return &MongoStore{database: database, collection: *collection}
 }
 
-func (s *MongoStore) List(ctx context.Context) []models.Task {
+func (s *MongoStore) List(ctx context.Context) ([]models.Task, error) {
 	cursor, err := s.collection.Find(ctx, bson.D{})
 	if err != nil {
-		panic(err)
+		return []models.Task{}, err
 	}
-	var tasks []models.Task
+
+	tasks := []models.Task{}
 	if err = cursor.All(ctx, &tasks); err != nil {
-		panic(err)
+		return []models.Task{}, err
 	}
 	defer cursor.Close(ctx)
 
-	return tasks
+	return tasks, nil
 }
 
 func (s *MongoStore) Add(ctx context.Context, task models.Task) (models.Task, error) {

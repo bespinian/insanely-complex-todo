@@ -7,7 +7,7 @@ import (
 )
 
 type TaskStore interface {
-	List(context.Context) []models.Task
+	List(context.Context) ([]models.Task, error)
 	Get(context.Context, string) (models.Task, error)
 	Add(context.Context, models.Task) (models.Task, error)
 	Update(context.Context, models.Task) (models.Task, error)

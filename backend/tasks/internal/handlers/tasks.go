@@ -16,7 +16,11 @@ func NewTaskHandler(store internal.TaskStore) *TaskHandler {
 }
 
 func (h *TaskHandler) List(c *fiber.Ctx) error {
-	tasks := h.store.List(c.Context())
+	tasks, err := h.store.List(c.Context())
+	if err != nil {
+		log.Errorf("error loading tasks: %v", err)
+		return fiber.ErrInternalServerError
+	}
 	return c.JSON(tasks)
 }
 

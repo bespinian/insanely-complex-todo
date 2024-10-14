@@ -16,12 +16,12 @@ func NewMemoryStore() *MemoryStore {
 	return &MemoryStore{map[string]models.Task{}}
 }
 
-func (m *MemoryStore) List(ctx context.Context) []models.Task {
+func (m *MemoryStore) List(ctx context.Context) ([]models.Task, error) {
 	values := make([]models.Task, 0, len(m.tasks))
 	for _, value := range m.tasks {
 		values = append(values, value)
 	}
-	return values
+	return values, nil
 }
 
 func (m *MemoryStore) Get(ctx context.Context, id string) (models.Task, error) {

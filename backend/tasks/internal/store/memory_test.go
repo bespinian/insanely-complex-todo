@@ -27,7 +27,7 @@ func getStoreWithATask() (*store.MemoryStore, string) {
 func TestMemoryList(t *testing.T) {
 	store, id := getStoreWithATask()
 
-	listOfTasks := store.List(context.Background())
+	listOfTasks, _ := store.List(context.Background())
 	assert.Len(t, listOfTasks, 1)
 	assert.Equal(t, listOfTasks[0].Id, id)
 }
@@ -35,7 +35,7 @@ func TestMemoryList(t *testing.T) {
 func TestMemoryListEmpty(t *testing.T) {
 	store := store.MemoryStore{}
 
-	listOfTasks := store.List(context.Background())
+	listOfTasks, _ := store.List(context.Background())
 	assert.NotNil(t, listOfTasks)
 	assert.Len(t, listOfTasks, 0)
 }
@@ -75,6 +75,6 @@ func TestMemoryDelete(t *testing.T) {
 	err := store.Delete(context.Background(), id)
 	assert.Nil(t, err)
 
-	tasks := store.List(context.Background())
+	tasks, _ := store.List(context.Background())
 	assert.Len(t, tasks, 0)
 }
