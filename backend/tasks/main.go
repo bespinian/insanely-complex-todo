@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/bespinian/ict-todo/backend/tasks/internal"
@@ -9,9 +8,11 @@ import (
 	"github.com/bespinian/ict-todo/backend/tasks/internal/handlers"
 	"github.com/bespinian/ict-todo/backend/tasks/internal/store"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -33,10 +34,10 @@ func main() {
 
 func configureTaskStore() internal.TaskStore {
 	if mongoUri := os.Getenv("MONGODB_URI"); mongoUri != "" {
-		log.Print("MONGODB_URI is set. Using MongoDB as storage.")
+		log.Info("MONGODB_URI is set. Using MongoDB as storage.")
 		db, err := store.NewMongoDatabase(mongoUri, "ict")
 		if err != nil {
-			log.Printf("Could not connect to MongoDB: %s. Falling back to in-memory store.", err)
+			log.Infof("Could not connect to MongoDB: %s. Falling back to in-memory store.", err)
 			return store.NewMemoryStore()
 		} else {
 			return store.NewMongoStore(db)
@@ -48,6 +49,18 @@ func configureTaskStore() internal.TaskStore {
 
 func configureEventQueues() {
 	events.AddQueue(&events.CLIQueue{})
+
+	if url := os.Getenv("REDIS_URL"); url != "" {
+		log.Info("REDIS_URL is set. Using Redis event queue.")
+		opts, err := redis.ParseURL(url)
+		if err != nil {
+			log.Error("Could not parse REDIS_URL.")
+			opts = &redis.Options{}
+		}
+		redisClient := redis.NewClient(opts)
+		redisQueue := events.NewRedisQueue(redisClient)
+		events.AddQueue(redisQueue)
+	}
 }
 
 func configureAPIHandler(app *fiber.App, taskStore internal.TaskStore) fiber.Router {

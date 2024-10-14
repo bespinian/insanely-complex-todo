@@ -46,6 +46,7 @@ services:
       - ./backend/tasks:/app
     environment:
       - MONGODB_URI=mongodb://mongo
+      - REDIS_URL=redis://redis:6379/0
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "/usr/bin/wget -O- --tries=1 --quiet 127.0.0.1:3000/readyz"]
@@ -66,6 +67,12 @@ services:
       - internal
     volumes:
       - mongo_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    networks:
+      - internal
 
 volumes:
   mongo_data: {}
