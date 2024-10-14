@@ -5,12 +5,25 @@ and deploy a modern web application with several different services in the backg
 
 ## Services
 
+This is an overview. You will find more detailed explanations for the services in their own Readme. The services are intentionally written in different languages and frameworks. First, we wanted to showcase the interactions between different kinds of applications, and second, we wanted to learn and have fun.
+
 - **[Frontend](./frontend/)** A simple Svelte client application.
 - **[Tasks API](./backend/tasks/)** The API for interacting with tasks, written in Go, using the Fiber framework.
 
-## Development Setup
+## Deployments
+
+### Development Setup
 
 The development setup is the first of several showcase architectures. It shows how to develop a frontend-backend application with different technologies using Docker and Docker Compose.
+
+All apps run in development mode, if they have one. This means, any code changes should be immediately be visible in the app. This setup allows fast feedback without the need for rebuilding Docker images and restarting services. It's also possible to run tests inside those containers or start dedicated development containers if you want to.
+
+You can easily run this setup by checking out the repository and run the following commands:
+
+```sh
+docker-compose up -d
+open http://localhost:8000
+```
 
 ```mermaid
 graph LR;

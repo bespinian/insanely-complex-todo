@@ -1,6 +1,8 @@
-# ICT - The Insanly Complex Todo App
+# ICT - Frontend
 
-## Developing
+This is the frontend for the todo app. It's a single-page app built with Svelte. It connects to the tasks backend via the API endpoint `/api/tasks`.
+
+## Development
 
 Install dependencies with `npm install` (or `pnpm install` or `yarn`), then start a development server:
 
@@ -20,5 +22,3 @@ npm run build
 ```
 
 You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
