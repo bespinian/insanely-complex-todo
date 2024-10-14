@@ -34,7 +34,7 @@ func NewMongoStore(database *mongo.Database) *MongoStore {
 	return &MongoStore{database: database, collection: *collection}
 }
 
-func (s *MongoStore) List(ctx context.Context) []*models.Task {
+func (s *MongoStore) List(ctx context.Context) []models.Task {
 	cursor, err := s.collection.Find(ctx, bson.D{})
 	if err != nil {
 		panic(err)
@@ -45,14 +45,10 @@ func (s *MongoStore) List(ctx context.Context) []*models.Task {
 	}
 	defer cursor.Close(ctx)
 
-	tasksP := make([]*models.Task, 0, len(tasks))
-	for _, task := range tasks {
-		tasksP = append(tasksP, &task)
-	}
-	return tasksP
+	return tasks
 }
 
-func (s *MongoStore) Add(ctx context.Context, task *models.Task) (*models.Task, error) {
+func (s *MongoStore) Add(ctx context.Context, task models.Task) (models.Task, error) {
 	if task.Id == "" {
 		task.Id = primitive.NewObjectID().String()
 	}
@@ -60,22 +56,19 @@ func (s *MongoStore) Add(ctx context.Context, task *models.Task) (*models.Task, 
 	return task, err
 }
 
-func (s *MongoStore) Get(ctx context.Context, id string) *models.Task {
+func (s *MongoStore) Get(ctx context.Context, id string) (models.Task, error) {
 	var task models.Task
 	filter := bson.D{primitive.E{Key: "_id", Value: id}}
 	if err := s.collection.FindOne(ctx, filter).Decode(&task); err != nil {
-		if err == mongo.ErrNoDocuments {
-			return nil
-		}
-		panic(err)
+		return models.Task{}, err
 	}
-	return &task
+	return task, nil
 }
 
-func (s *MongoStore) Update(ctx context.Context, task *models.Task) error {
+func (s *MongoStore) Update(ctx context.Context, task models.Task) (models.Task, error) {
 	filter := bson.D{primitive.E{Key: "_id", Value: task.Id}}
 	_, err := s.collection.ReplaceOne(ctx, filter, task)
-	return err
+	return task, err
 }
 
 func (s *MongoStore) Delete(ctx context.Context, id string) error {

@@ -15,7 +15,7 @@ var _ internal.TaskStore = &store.MemoryStore{}
 
 func getStoreWithATask() (*store.MemoryStore, string) {
 	store := store.NewMemoryStore()
-	task := &models.Task{Name: "Testtask"}
+	task := models.Task{Name: "Testtask"}
 
 	_, err := store.Add(context.Background(), task)
 	if err != nil {
@@ -43,13 +43,14 @@ func TestMemoryListEmpty(t *testing.T) {
 func TestMemoryGet(t *testing.T) {
 	store, id := getStoreWithATask()
 
-	task := store.Get(context.Background(), id)
+	task, err := store.Get(context.Background(), id)
+	assert.Nil(t, err)
 	assert.Equal(t, task.Id, id)
 }
 
 func TestMemoryAdd(t *testing.T) {
 	store := store.NewMemoryStore()
-	task := &models.Task{Name: "Testtask"}
+	task := models.Task{Name: "Testtask"}
 
 	task, err := store.Add(context.Background(), task)
 
@@ -60,10 +61,10 @@ func TestMemoryAdd(t *testing.T) {
 
 func TestMemoryUpdate(t *testing.T) {
 	store, id := getStoreWithATask()
-	task := store.Get(context.Background(), id)
+	task, _ := store.Get(context.Background(), id)
 
 	task.Name = "new name"
-	err := store.Update(context.Background(), task)
+	_, err := store.Update(context.Background(), task)
 
 	assert.Nil(t, err)
 }

@@ -23,16 +23,16 @@ func (h *TaskHandler) List(c *fiber.Ctx) error {
 func (h *TaskHandler) Get(c *fiber.Ctx) error {
 	taskId := c.Params("id")
 
-	task := h.store.Get(c.Context(), taskId)
-	if task == nil {
+	task, err := h.store.Get(c.Context(), taskId)
+	if err != nil {
 		return fiber.ErrNotFound
 	}
 	return c.JSON(task)
 }
 
 func (h *TaskHandler) Create(c *fiber.Ctx) error {
-	task := new(models.Task)
-	if err := c.BodyParser(task); err != nil {
+	task := models.Task{}
+	if err := c.BodyParser(&task); err != nil {
 		return err
 	}
 
@@ -46,17 +46,18 @@ func (h *TaskHandler) Create(c *fiber.Ctx) error {
 }
 
 func (h *TaskHandler) Update(c *fiber.Ctx) error {
-	task := new(models.Task)
-	if err := c.BodyParser(task); err != nil {
+	task := models.Task{}
+	if err := c.BodyParser(&task); err != nil {
 		return err
 	}
 
-	if err := h.store.Update(c.Context(), task); err != nil {
+	updatedTask, err := h.store.Update(c.Context(), task)
+	if err != nil {
 		log.Error(err)
 		return fiber.ErrInternalServerError
 	}
 
-	return c.JSON(task)
+	return c.JSON(updatedTask)
 }
 
 func (h *TaskHandler) Delete(c *fiber.Ctx) error {

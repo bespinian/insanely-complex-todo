@@ -9,33 +9,37 @@ import (
 )
 
 type MemoryStore struct {
-	tasks map[string]*models.Task
+	tasks map[string]models.Task
 }
 
 func NewMemoryStore() *MemoryStore {
-	return &MemoryStore{map[string]*models.Task{}}
+	return &MemoryStore{map[string]models.Task{}}
 }
 
-func (m *MemoryStore) List(ctx context.Context) []*models.Task {
-	values := make([]*models.Task, 0, len(m.tasks))
+func (m *MemoryStore) List(ctx context.Context) []models.Task {
+	values := make([]models.Task, 0, len(m.tasks))
 	for _, value := range m.tasks {
 		values = append(values, value)
 	}
 	return values
 }
 
-func (m *MemoryStore) Get(ctx context.Context, id string) *models.Task {
-	return m.tasks[id]
+func (m *MemoryStore) Get(ctx context.Context, id string) (models.Task, error) {
+	task, exists := m.tasks[id]
+	if !exists {
+		return models.Task{}, errors.New("task does not exist")
+	}
+	return task, nil
 }
 
-func (m *MemoryStore) Add(ctx context.Context, task *models.Task) (*models.Task, error) {
+func (m *MemoryStore) Add(ctx context.Context, task models.Task) (models.Task, error) {
 	if task.Id == "" {
 		id := uuid.New()
 		task.Id = id.String()
 	}
 	_, exists := m.tasks[task.Id]
 	if exists {
-		return nil, errors.New("The task ID already exists!")
+		return models.Task{}, errors.New("The task ID already exists!")
 	}
 
 	m.tasks[task.Id] = task
@@ -43,10 +47,10 @@ func (m *MemoryStore) Add(ctx context.Context, task *models.Task) (*models.Task,
 	return task, nil
 }
 
-func (m *MemoryStore) Update(ctx context.Context, task *models.Task) error {
+func (m *MemoryStore) Update(ctx context.Context, task models.Task) (models.Task, error) {
 	m.tasks[task.Id] = task
 
-	return nil
+	return task, nil
 }
 
 func (m *MemoryStore) Delete(ctx context.Context, id string) error {
