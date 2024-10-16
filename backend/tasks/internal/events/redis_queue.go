@@ -2,12 +2,13 @@ package events
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/redis/go-redis/v9"
 )
 
-const REDIS_KEY = "task_events"
+const REDIS_CHANNEL_PREFIX = "events"
 
 type RedisQueue struct {
 	client *redis.Client
@@ -23,9 +24,12 @@ func (q *RedisQueue) QueueMessage(ctx context.Context, msg Event) error {
 		return errors.Wrap(err, "message could not be serialized")
 	}
 
-	if err = q.client.RPush(ctx, REDIS_KEY, message).Err(); err != nil {
+	channel := fmt.Sprintf("%s.%s", REDIS_CHANNEL_PREFIX, msg.Type)
+	if err = q.client.Publish(ctx, channel, message).Err(); err != nil {
 		return errors.Wrap(err, "pushing message to Redis failed")
 	}
+
+	// events können dann mit `PSUBSCRIBE events.*` abgehört werden.
 
 	return nil
 }
