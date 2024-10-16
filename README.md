@@ -23,6 +23,8 @@ The development setup is the first of several showcase architectures. It shows h
 
 All apps run in development mode, if they have one. This means, any code changes should immediately be visible in the app. This setup allows fast feedback without the need for rebuilding Docker images and restarting services. It's also possible to run tests inside those containers or start dedicated development containers if you want to.
 
+We've split the compose.yaml into several files to keep things tidy. Start with [compose.yaml](./compose.yaml). The other files are included at the top.
+
 You can easily run this setup by checking out the repository and run the following commands:
 
 ```sh
@@ -45,8 +47,8 @@ graph LR;
     end
 
     subgraph Backend
-        TasksAPI -- :27017 --> MongoDB
-        TasksAPI -- :6379 --> Redis
+        TasksAPI-- :27017 --> MongoDB
+        TasksAPI-- :6379 --> Redis
     end
 
     subgraph lb[Load Balancer]

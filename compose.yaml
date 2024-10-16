@@ -1,0 +1,32 @@
+include:
+  - apps.compose.yaml
+  - db.compose.yaml
+  - redis.compose.yaml
+
+services:
+  traefik:
+    image: "traefik:v3.1"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+      - "--ping.entrypoint=traefik"
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "/usr/bin/wget -O- --tries=1 --quiet 127.0.0.1:8080/ping"]
+      start_period: 5s
+      start_interval: 1s
+    ports:
+      - "8000:80" # Our entrypoint
+      - "8080:8080" # Dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - default
+      - internal
+
+networks:
+  default: {}
+  internal:
+    external: false

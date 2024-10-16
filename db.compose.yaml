@@ -1,0 +1,11 @@
+services:
+  mongo:
+    image: mongo:8.0
+    restart: always
+    networks:
+      - internal
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data: {}

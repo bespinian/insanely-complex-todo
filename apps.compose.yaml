@@ -1,0 +1,43 @@
+services:
+  frontend:
+    build:
+      context: frontend
+      target: build
+    command: ["npm", "run", "dev", "--", "--host"]
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.services.frontend.loadbalancer.server.port=5173"
+    networks:
+      - internal
+
+  tasks:
+    build:
+      context: backend/tasks
+      target: build
+    command: ["gow", "-c", "-e=go,mod,sum,env,toml", "run", "."]
+    volumes:
+      - ./backend/tasks:/app
+    environment:
+      - MONGODB_URI=mongodb://mongo
+      - REDIS_URL=redis://redis:6379/0
+    restart: always
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/usr/bin/wget -O- --tries=1 --quiet 127.0.0.1:3000/readyz",
+        ]
+      start_period: 5s
+      start_interval: 1s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tasks.rule=PathPrefix(`/api/tasks`)"
+      - "traefik.http.routers.tasks.entrypoints=web"
+      - "traefik.http.services.tasks.loadbalancer.server.port=3000"
+    networks:
+      - internal
