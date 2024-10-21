@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "websocket-server"
+version = "0.1.0"
+description = ""
+authors = ["Philippe Hässig <philippe@bespinian.io>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.13"
+websockets = "^13.1"
+redis = "^5.1.1"
+tenacity = "^9.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.9"
+types-redis = "^4.6.0.20241004"
+mypy = "^1.12.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 120
+target-version = 'py311'
+exclude = [
+    "__pycache__",
+    ".git",
+    ".gitignore",
+    "venv",
+    ".pytest_cache",
+    "data",
+    "docs",
+    "httpdocs",
+    "label",
+    "nwrfcsdk",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "Q", "I"]
+ignore = ["E203", "E501"]
