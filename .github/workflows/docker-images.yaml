@@ -18,6 +18,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: "Tasks API: Build and push Docker image"
         uses: docker/build-push-action@v6
         with:
@@ -26,6 +27,7 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}/tasks:latest
             ghcr.io/${{ github.repository }}/tasks:${{ github.sha }}
+
       - name: "Frontend: Build and push Docker image"
         uses: docker/build-push-action@v6
         with:
@@ -34,3 +36,12 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}/frontend:latest
             ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
+
+      - name: "Websocket Server: Build and push Docker image"
+        uses: docker/build-push-action@v6
+        with:
+          push: ${{ github.event_name != 'pull_request' }}
+          context: backend/websocket-server
+          tags: |
+            ghcr.io/${{ github.repository }}/websocket-server:latest
+            ghcr.io/${{ github.repository }}/websocket-server:${{ github.sha }}

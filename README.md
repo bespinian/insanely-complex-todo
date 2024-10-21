@@ -8,7 +8,8 @@ and deploy a modern web application with several different services in the backg
 This is an overview. You will find more detailed explanations for the components in their own Readme. The components are intentionally written in different languages and frameworks. First, we wanted to showcase the interactions between different kinds of applications, and second, we wanted to learn and have fun.
 
 - **[Frontend](./frontend/)** A simple Svelte client application.
-- **[Tasks API](./backend/tasks/)** The API for interacting with tasks, written in Go, using the Fiber framework.
+- **[Tasks API](./backend/tasks/)** The API for interacting with tasks, written in Go, using the Fiber framework. Changes to tasks are published as events to Redis.
+- **[WebsocketServer](./backend/websocket-server/)** Listens for events in Redis and broadcasts them to all connected Websocket clients. The frontend connects to it by default.
 
 ## Services
 
@@ -49,11 +50,13 @@ graph LR;
     subgraph Backend
         TasksAPI-- :27017 --> MongoDB
         TasksAPI-- :6379 --> Redis
+        WebsocketServer-- :6379 -->Redis
     end
 
     subgraph lb[Load Balancer]
         Traeffik-- :5173 --> Frontend
         Traeffik-- :3000 --> TasksAPI
+        Traeffik-- :8765 --> WebsocketServer
     end
 
 

@@ -41,3 +41,19 @@ services:
       - "traefik.http.services.tasks.loadbalancer.server.port=3000"
     networks:
       - internal
+
+  websocket-server:
+    build:
+      context: backend/websocket-server
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - WEBSOCKET_SERVER_HOST=0.0.0.0
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.websocket-server.rule=PathPrefix(`/ws`)"
+      - "traefik.http.routers.websocket-server.entrypoints=web"
+      - "traefik.http.services.websocket-server.loadbalancer.server.port=8765"
+    volumes:
+      - ./backend/websocket-server:/app
+    networks:
+      - internal

@@ -2,6 +2,7 @@
 	import store from '$lib/task_store';
 	import { onMount, type ComponentEvents } from 'svelte';
 	import TodoItem from './TodoItem.svelte';
+	import Notifications from './Notifications.svelte';
 	import type Task from '$lib/task';
 
 	let newItem = '';
@@ -29,6 +30,8 @@
 		store.update(event.detail as Task);
 	}
 </script>
+
+<Notifications></Notifications>
 
 <div class="bg-white max-w-lg mx-auto shadow-lg rounded-lg mt-16">
 	<h1 class="font-bold px-4 py-2">To-Do List</h1>
