@@ -62,3 +62,7 @@ graph LR;
 
     User-- :8000 --> Traeffik
 ```
+
+### Kubernetes with plain YML files
+
+There is a plain YML Kubernetes setup. Have a look at the instructions in its [README](./k8s/README.md).
