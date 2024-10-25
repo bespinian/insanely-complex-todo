@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: websocket-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: websocket-server
+  template:
+    metadata:
+      labels:
+        app: websocket-server
+    spec:
+      containers:
+        - name: websocket-server
+          image: ghcr.io/bespinian/insanely-complex-todo/websocket-server:latest
+          env:
+            - name: REDIS_URL
+              value: redis://redis/0
+            - name: WEBSOCKET_SERVER_HOST
+              value: "0.0.0.0"
+            - name: WEBSOCKET_SERVER_PORT
+              value: "8765"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: websocket-server
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8765
+  selector:
+    app: websocket-server
+  type: ClusterIP

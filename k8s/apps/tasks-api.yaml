@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tasks
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tasks
+  template:
+    metadata:
+      labels:
+        app: tasks
+    spec:
+      containers:
+        - name: tasks
+          image: ghcr.io/bespinian/insanely-complex-todo/tasks:latest
+          env:
+            - name: MONGODB_URI
+              value: mongodb://mongo
+            - name: REDIS_URL
+              value: redis://redis/0
+          readinessProbe:
+            initialDelaySeconds: 1
+            periodSeconds: 10
+            httpGet:
+              port: 3000
+              path: livez
+          livenessProbe:
+            initialDelaySeconds: 1
+            periodSeconds: 10
+            httpGet:
+              port: 3000
+              path: readyz
+          resources:
+            requests:
+              memory: "50Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tasks
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 3000
+  selector:
+    app: tasks
+  type: ClusterIP
