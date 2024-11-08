@@ -2,6 +2,7 @@ include:
   - apps.compose.yaml
   - db.compose.yaml
   - redis.compose.yaml
+  - monitoring.compose.yaml
 
 services:
   traefik:
@@ -12,9 +13,12 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entryPoints.web.address=:80"
       - "--ping.entrypoint=traefik"
+      - "--metrics.prometheus=true"
+      - "--metrics.addinternals"
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "/usr/bin/wget -O- --tries=1 --quiet 127.0.0.1:8080/ping"]
+      test:
+        ["CMD-SHELL", "/usr/bin/wget -O- --tries=1 --quiet 127.0.0.1:8080/ping"]
       start_period: 5s
       start_interval: 1s
     ports:
