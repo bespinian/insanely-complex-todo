@@ -1,11 +1,14 @@
 services:
   mongo:
-    image: mongo:8.0
+    image: mongodb/mongodb-community-server:latest
     restart: always
+    environment:
+      MONGO_INITDB_DATABASE: ict
     networks:
       - internal
     volumes:
       - mongo_data:/data/db
+      - ./db/mongodb:/docker-entrypoint-initdb.d
 
 volumes:
   mongo_data: {}

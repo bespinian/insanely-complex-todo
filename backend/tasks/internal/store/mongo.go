@@ -11,6 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+const CollectionName = "tasks"
+
 type MongoStore struct {
 	database   *mongo.Database
 	collection mongo.Collection
@@ -30,7 +32,7 @@ func NewMongoDatabase(uri string, database string) (*mongo.Database, error) {
 }
 
 func NewMongoStore(database *mongo.Database) *MongoStore {
-	collection := database.Collection("tasks")
+	collection := database.Collection(CollectionName)
 	return &MongoStore{database: database, collection: *collection}
 }
 

@@ -49,6 +49,16 @@ services:
     networks:
       - internal
 
+  mongodb-exporter:
+    image: percona/mongodb_exporter:0.40
+    command:
+      - --mongodb.uri=mongodb://monitoring:monitoring@mongo:27017/admin
+      - --mongodb.collstats-colls=ict.tasks
+      - --mongodb.indexstats-colls=ict.tasks
+      - --collect-all
+    networks:
+      - internal
+
 volumes:
   grafana-storage:
   prometheus-storage:

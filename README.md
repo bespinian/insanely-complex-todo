@@ -53,8 +53,12 @@ graph LR;
         Grafana
         Prometheus
         NodeExporter
+        MongodbExporter
 
         Grafana-- :9090 --> Prometheus
+        Prometheus-- :9100 --> NodeExporter
+        Prometheus-- :9216 --> MongodbExporter
+        MongodbExporter --> MongoDB
     end
 
     subgraph Backend
@@ -74,7 +78,6 @@ graph LR;
     User-- localhost:8000 --> Traeffik
 
     Prometheus-- /metrics --> Traeffik
-    Prometheus-- :9100 --> NodeExporter
 ```
 
 ### Kubernetes with plain YML files
