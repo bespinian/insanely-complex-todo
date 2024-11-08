@@ -7,8 +7,11 @@ x-redis-defaults: &redis-defaults
 services:
   redis:
     <<: *redis-defaults
+    command: ["redis-server", "--maxmemory", "100mb"]
     healthcheck:
       test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+    volumes:
+      - redis-data:/data
 
   redis-event-stream:
     <<: *redis-defaults
@@ -16,3 +19,6 @@ services:
       ["redis-cli", "-u", "redis://redis:6379/0", "PSUBSCRIBE", "events.*"]
     depends_on:
       - redis
+
+volumes:
+  redis-data:

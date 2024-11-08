@@ -59,6 +59,15 @@ services:
     networks:
       - internal
 
+  redis-exporter:
+    image: oliver006/redis_exporter
+    command:
+      - --redis.addr=redis://redis
+    networks:
+      - internal
+    ports:
+      - 9121:9121
+
 volumes:
   grafana-storage:
   prometheus-storage:
