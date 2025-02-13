@@ -10,6 +10,7 @@ This is an overview. You will find more detailed explanations for the components
 - **[Frontend](./frontend/)** A simple Svelte client application.
 - **[Tasks API](./backend/tasks/)** The API for interacting with tasks, written in Go, using the Fiber framework. Changes to tasks are published as events to Redis.
 - **[WebsocketServer](./backend/websocket-server/)** Listens for events in Redis and broadcasts them to all connected Websocket clients. The frontend connects to it by default.
+- **[Monitoring & Observability](./observability/)** The Prometheus/Grafana Stack monitors our services and let's us view some nice charts and graphs.
 
 ## Services
 
@@ -31,6 +32,7 @@ You can easily run this setup by checking out the repository and run the followi
 ```sh
 docker-compose up -d
 open http://localhost:8000
+open http://grafana.localhost:8000
 ```
 
 ```mermaid
@@ -47,6 +49,18 @@ graph LR;
         Redis
     end
 
+    subgraph Observability
+        Grafana
+        Prometheus
+        NodeExporter
+        MongodbExporter
+
+        Grafana-- :9090 --> Prometheus
+        Prometheus-- :9100 --> NodeExporter
+        Prometheus-- :9216 --> MongodbExporter
+        MongodbExporter --> MongoDB
+    end
+
     subgraph Backend
         TasksAPI-- :27017 --> MongoDB
         TasksAPI-- :6379 --> Redis
@@ -57,10 +71,13 @@ graph LR;
         Traeffik-- :5173 --> Frontend
         Traeffik-- :3000 --> TasksAPI
         Traeffik-- :8765 --> WebsocketServer
+        Traeffik-- :3000 --> Grafana
     end
 
 
-    User-- :8000 --> Traeffik
+    User-- localhost:8000 --> Traeffik
+
+    Prometheus-- /metrics --> Traeffik
 ```
 
 ### Kubernetes with plain YML files

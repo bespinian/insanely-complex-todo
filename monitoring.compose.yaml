@@ -1,0 +1,73 @@
+---
+services:
+  grafana:
+    image: grafana/grafana-oss
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
+      - "traefik.http.routers.grafana.entrypoints=web"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./observability/grafana:/etc/grafana/provisioning
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - internal
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - "./observability/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - prometheus-storage:/prometheus
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
+      - "traefik.http.routers.prometheus.entrypoints=web"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+    networks:
+      - internal
+
+  node-exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    command:
+      - --path.procfs
+      - /host/proc
+      - --path.sysfs
+      - /host/sys
+      - --collector.filesystem.ignored-mount-points
+      - "^/(sys|proc|dev|host|etc)($|/)"
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - "/proc:/host/proc:ro"
+      - "/sys:/host/sys:ro"
+      - "/:/rootfs:ro"
+    networks:
+      - internal
+
+  mongodb-exporter:
+    image: percona/mongodb_exporter:0.40
+    command:
+      - --mongodb.uri=mongodb://monitoring:monitoring@mongo:27017/admin
+      - --mongodb.collstats-colls=ict.tasks
+      - --mongodb.indexstats-colls=ict.tasks
+      - --collect-all
+    networks:
+      - internal
+
+  redis-exporter:
+    image: oliver006/redis_exporter
+    command:
+      - --redis.addr=redis://redis
+    networks:
+      - internal
+    ports:
+      - 9121:9121
+
+volumes:
+  grafana-storage:
+  prometheus-storage:
